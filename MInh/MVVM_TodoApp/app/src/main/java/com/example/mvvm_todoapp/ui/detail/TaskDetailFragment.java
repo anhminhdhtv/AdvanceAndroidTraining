@@ -1,26 +1,19 @@
 package com.example.mvvm_todoapp.ui.detail;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.ViewModelProvider;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.TextView;
+
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.mvvm_todoapp.R;
 import com.example.mvvm_todoapp.data.model.TodoTask;
-import com.example.mvvm_todoapp.ui.main.MainActivity;
-import com.example.mvvm_todoapp.ui.viewModel.TodoTaskViewModel;
-import com.example.mvvm_todoapp.utils.Utilities;
+import com.example.mvvm_todoapp.databinding.FragmentTaskDetailBinding;
+import com.example.mvvm_todoapp.ui.base.ViewModelFactory;
+import com.example.mvvm_todoapp.ui.MainActivity;
 
-import java.text.ParseException;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -35,15 +28,7 @@ public class TaskDetailFragment extends Fragment {
 
     // TODO: Rename and change types of parameters
     private int mTaskID;
-    private TextView txtTaskName;
-    private TextView txtTaskDescription;
-    private TextView txtDate;
-    private ImageButton btnBack;
-    private Button btnEdit;
-    private Button btnDelete;
-
-    private TodoTaskViewModel mTodoTaskViewModel;
-
+    private TaskDetailViewModel mTaskDetailViewModel;
 
     public TaskDetailFragment() {
         // Required empty public constructor
@@ -52,6 +37,7 @@ public class TaskDetailFragment extends Fragment {
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
+     *
      * @return A new instance of fragment TaskDetailFragment.
      */
     // TODO: Rename and change types and number of parameters
@@ -75,43 +61,38 @@ public class TaskDetailFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView= inflater.inflate(R.layout.fragment_task_detail, container, false);
-        initView(rootView);
+        View rootView = inflater.inflate(R.layout.fragment_task_detail, container, false);
+        initViewHolder();
+        initDataBinding(rootView);
         return rootView;
     }
 
-    private void initView(View rootView){
-        txtTaskName = rootView.findViewById(R.id.tv_task_name);
-        txtTaskDescription = rootView.findViewById(R.id.tv_description);
-        txtDate = rootView.findViewById(R.id.tv_date);
-        btnDelete = rootView.findViewById(R.id.btn_delete);
-        btnEdit = rootView.findViewById(R.id.btn_edit);
-        btnBack = rootView.findViewById(R.id.btn_back);
-        mTodoTaskViewModel = new ViewModelProvider(this).get(TodoTaskViewModel.class);
-
-        subscribeToModel(mTodoTaskViewModel.getTodoTaskByID(mTaskID));
-
-
-        btnBack.setOnClickListener(v -> {
-            requireFragmentManager().beginTransaction().remove(this).commit();
-        });
-
-        btnEdit.setOnClickListener(v -> {
-            ((MainActivity)requireActivity()).startEditTaskFragment(mTaskID);
-        });
-
-        btnDelete.setOnClickListener(v -> {
-            mTodoTaskViewModel.deleteTask(mTaskID);
-            requireFragmentManager().beginTransaction().remove(this).commit();
-        });
-
-
+    private void initViewHolder() {
+        ViewModelFactory factory = ViewModelFactory.getInstance(requireActivity().getApplication());
+        mTaskDetailViewModel = new ViewModelProvider(requireActivity(), factory).get(TaskDetailViewModel.class);
+        mTaskDetailViewModel.loadTodoTaskByID(mTaskID);
     }
-    private void subscribeToModel(LiveData<TodoTask> liveData){
-        liveData.observe(getViewLifecycleOwner(), todoTask -> {
-            txtTaskName.setText(todoTask.getTaskName() == null? "":todoTask.getTaskName());
-            txtDate.setText(Utilities.convertDateToString(todoTask.getDate()));
-            txtTaskDescription.setText(todoTask.getDescription());
+
+    private void initDataBinding(View rootView) {
+        FragmentTaskDetailBinding fragmentTaskDetailBinding = FragmentTaskDetailBinding.bind(rootView);
+        fragmentTaskDetailBinding.setLifecycleOwner(getViewLifecycleOwner());
+        fragmentTaskDetailBinding.setViewModel(mTaskDetailViewModel);
+        fragmentTaskDetailBinding.setListener(new TaskDetailListener() {
+            @Override
+            public void onEditClick(TodoTask todoTask) {
+                ((MainActivity) requireActivity()).startEditTaskFragment(mTaskID);
+            }
+
+            @Override
+            public void onDeleteClick(TodoTask todoTask) {
+                mTaskDetailViewModel.deleteTask(mTaskID);
+                requireFragmentManager().beginTransaction().remove(TaskDetailFragment.this).commit();
+            }
+
+            @Override
+            public void onBackClick() {
+                requireFragmentManager().beginTransaction().remove(TaskDetailFragment.this).commit();
+            }
         });
     }
 }

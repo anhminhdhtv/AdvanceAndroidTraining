@@ -1,19 +1,20 @@
 package com.example.mvvm_todoapp.utils;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class Utilities {
-    public static String convertDateToString(Date date){
-        if(date == null) return "";
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/mm/dd");
-        return dateFormat.format(date);
+    public static String convertDateToString(LocalDate date) {
+        if (date == null) return "";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/M/d");
+        return date.format(formatter);
     }
 
-    public static Date convertStringToDate(String strDate) throws ParseException {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/mm/dd");
-        return dateFormat.parse(strDate);
+    public static LocalDate convertStringToDate(String strDate) {
+        if (strDate == null || strDate.isEmpty()) {
+            return LocalDate.now();
+        }
+        final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/M/d");
+        return LocalDate.parse(strDate, dtf);
     }
 }

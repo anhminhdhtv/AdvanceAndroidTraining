@@ -11,22 +11,38 @@ import com.example.mvvm_todoapp.data.model.TodoTask;
 import java.util.List;
 
 public class TodoTaskRepository {
+    private volatile static TodoTaskRepository INSTANCE = null;
     private TodoTaskDao mTodoTaskDao;
 
-    public TodoTaskRepository(Application application) {
+    private TodoTaskRepository(Application application) {
         TodoTaskDatabase db = TodoTaskDatabase.getDatabase(application);
         mTodoTaskDao = db.todoTaskDao();
     }
 
+    public static TodoTaskRepository getInstance(Application application) {
+        if (INSTANCE == null) {
+            synchronized (TodoTaskRepository.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new TodoTaskRepository(application);
+                }
+            }
+        }
+        return INSTANCE;
+    }
+
+
     public LiveData<List<TodoTask>> getAllTodoTasks() {
         return mTodoTaskDao.getAllTask();
     }
+
     public LiveData<TodoTask> getTaskByID(int ID) {
         return mTodoTaskDao.getTaskByID(ID);
     }
 
     public void insertTodoTask(TodoTask todoTask) {
-        mTodoTaskDao.insertTask(todoTask);
+        TodoTaskDatabase.databaseWriteExecutor.execute(()->{
+            mTodoTaskDao.insertTask(todoTask);
+        });
     }
 
     public void insertTodoTasks(TodoTask... todoTasks) {
@@ -42,6 +58,8 @@ public class TodoTaskRepository {
     }
 
     public void deleteTask(int taskID) {
-        mTodoTaskDao.deleteTask(taskID);
+        TodoTaskDatabase.databaseWriteExecutor.execute(()->{
+            mTodoTaskDao.deleteTask(taskID);
+        });
     }
 }

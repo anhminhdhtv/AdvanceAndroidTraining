@@ -1,31 +1,20 @@
 package com.example.mvvm_todoapp.ui.input;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.ViewModelProvider;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.TextView;
+
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.mvvm_todoapp.R;
-import com.example.mvvm_todoapp.data.db.converter.DateConverter;
 import com.example.mvvm_todoapp.data.model.TodoTask;
-import com.example.mvvm_todoapp.ui.viewModel.TodoTaskViewModel;
-import com.example.mvvm_todoapp.utils.Utilities;
-import com.google.android.material.datepicker.MaterialDatePicker;
-import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
+import com.example.mvvm_todoapp.databinding.FragmentTaskInputBinding;
+import com.example.mvvm_todoapp.ui.base.ViewModelFactory;
 
-import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDate;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -34,28 +23,16 @@ import java.util.List;
  */
 public class TaskInputFragment extends Fragment {
 
+    public static final int TYPE_CREATE = 0;
+    public static final int TYPE_EDIT = 1;
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-
     // TODO: Rename and change types of parameters
     private int mInputType;
     private int mTaskID;
-
-    public static final int TYPE_CREATE = 0;
-    public static final int TYPE_EDIT = 1;
-
-    private EditText txtTaskName;
-    private EditText txtTaskDescription;
-    private TextView txtDate;
-    private Button btnAction;
-    private ImageButton btnCalendar;
-    private TextView tvTitle;
-    private ImageButton btnBack;
-
-    private TodoTaskViewModel mTodoTaskViewModel;
-    private TodoTask mTodoTask;
+    private TaskInputViewModel mTaskInputViewModel;
 
     public TaskInputFragment() {
         // Required empty public constructor
@@ -91,71 +68,62 @@ public class TaskInputFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_task_input, container, false);
-        initView(view);
+        initView();
+
+        initDataBinding(view);
         return view;
     }
 
-    private void initView(View rootView){
-        txtTaskName = rootView.findViewById(R.id.txt_task_name);
-        txtTaskDescription = rootView.findViewById(R.id.txt_task_description);
-        txtDate = rootView.findViewById(R.id.txt_date);
-        btnAction = rootView.findViewById(R.id.btn_action);
-        btnCalendar = rootView.findViewById(R.id.btn_date);
-        tvTitle = rootView.findViewById(R.id.tv_title);
-        btnBack = rootView.findViewById(R.id.btn_back);
-        mTodoTaskViewModel = new ViewModelProvider(this).get(TodoTaskViewModel.class);
+    private void initView() {
+        ViewModelFactory factory = ViewModelFactory.getInstance(requireActivity().getApplication());
+        mTaskInputViewModel = new ViewModelProvider(requireActivity(), factory).get(TaskInputViewModel.class);
 
-        if(mInputType == TYPE_CREATE){
-            tvTitle.setText("Create new task");
-            btnAction.setText("ADD");
-            mTodoTask = new TodoTask();
+        if (mInputType == TYPE_CREATE) {
+            mTaskInputViewModel.setFragmentTitle("Create new task");
+            mTaskInputViewModel.createNewTodoTask();
         } else {
-            tvTitle.setText("Edit task");
-            btnAction.setText("UPDATE");
-
-            subscribeToModel(mTodoTaskViewModel.getTodoTaskByID(mTaskID));
+            mTaskInputViewModel.setFragmentTitle("Edit task");
+            mTaskInputViewModel.getTodoTaskById(mTaskID).observe(getViewLifecycleOwner(), todoTask -> {
+                mTaskInputViewModel.todoTask.setValue(todoTask);
+            });
         }
 
-        btnBack.setOnClickListener(v -> {
-            requireFragmentManager().beginTransaction().remove(this).commit();
-        });
-
-        btnAction.setOnClickListener(v -> {
-            mTodoTask.setTaskName(txtTaskName.getText().toString());
-            try {
-                mTodoTask.setDate(Utilities.convertStringToDate(txtDate.getText().toString()));
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-            mTodoTask.setDescription(txtTaskDescription.getText().toString());
-
-            if(mInputType == TYPE_CREATE){
-                mTodoTaskViewModel.insertTodoTask(mTodoTask);
-            } else {
-                mTodoTaskViewModel.update(mTodoTask);
-            }
-
-            requireFragmentManager().beginTransaction().remove(this).commit();
-        });
-
-        btnCalendar.setOnClickListener(v -> {
-            MaterialDatePicker datePicker = MaterialDatePicker.Builder.datePicker()
-                    .setTitleText("Select date")
-                    .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
-                    .build();
-            datePicker.addOnPositiveButtonClickListener(selection -> {
-                txtDate.setText(Utilities.convertDateToString(DateConverter.toDate((Long)selection)));
-            });
-            datePicker.show(requireFragmentManager(),"");
-        });
-
     }
-    private void subscribeToModel(LiveData<TodoTask> liveData){
-        liveData.observe(getViewLifecycleOwner(), todoTask -> {
-            mTodoTask = todoTask;
-            txtTaskName.setText(todoTask.getTaskName());
-            txtDate.setText(Utilities.convertDateToString(todoTask.getDate()));
-            txtTaskDescription.setText(todoTask.getDescription());
+
+    private void initDataBinding(View rootView) {
+        FragmentTaskInputBinding fragmentTaskInputBinding = FragmentTaskInputBinding.bind(rootView);
+        fragmentTaskInputBinding.setLifecycleOwner(getViewLifecycleOwner());
+        fragmentTaskInputBinding.setTodoTask(mTaskInputViewModel.todoTask);
+        fragmentTaskInputBinding.setTitle(mTaskInputViewModel.fragmentTitle);
+        fragmentTaskInputBinding.setListener(new TaskInputListener() {
+            @Override
+            public void onActionClick() {
+                if (mInputType == TYPE_CREATE) {
+                    mTaskInputViewModel.insertTodoTask();
+                } else {
+                    mTaskInputViewModel.update();
+                }
+                requireFragmentManager().beginTransaction().remove(TaskInputFragment.this).commit();
+            }
+
+            @Override
+            public void onCalenderButtonClick() {
+                DatePickerDialog.OnDateSetListener dateSetListener = (view, year, monthOfYear, dayOfMonth) -> {
+                    TodoTask todoTask = mTaskInputViewModel.todoTask.getValue();
+                    todoTask.setDate(LocalDate.of(year, monthOfYear, dayOfMonth));
+                    mTaskInputViewModel.todoTask.setValue(todoTask);
+                };
+                DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
+                        dateSetListener, LocalDate.now().getYear(), LocalDate.now().getMonthValue(), LocalDate.now().getDayOfMonth());
+
+                datePickerDialog.show();
+            }
+
+            @Override
+            public void onBackClick() {
+                requireFragmentManager().beginTransaction().remove(TaskInputFragment.this).commit();
+            }
         });
     }
+
 }

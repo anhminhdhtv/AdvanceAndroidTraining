@@ -1,24 +1,22 @@
 package com.example.mvvm_todoapp.ui.main;
 
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModelProvider;
+
 import com.example.mvvm_todoapp.R;
 import com.example.mvvm_todoapp.data.model.TodoTask;
+import com.example.mvvm_todoapp.databinding.FragmentMainBinding;
+import com.example.mvvm_todoapp.ui.MainActivity;
+import com.example.mvvm_todoapp.ui.base.ViewModelFactory;
 import com.example.mvvm_todoapp.ui.main.adapter.OnItemClickListener;
 import com.example.mvvm_todoapp.ui.main.adapter.TaskLisAdapter;
-import com.example.mvvm_todoapp.ui.viewModel.TodoTaskViewModel;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
@@ -34,10 +32,9 @@ public class MainFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    private TodoTaskViewModel mTodoTaskViewModel;
-    private RecyclerView mRecyclerView;
+    private MainTodoTaskViewModel mMainTodoTaskViewModel;
+    private FragmentMainBinding fragmentMainBinding;
     private TaskLisAdapter mTaskLisAdapter;
-    private FloatingActionButton btnAdd;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -79,44 +76,44 @@ public class MainFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        initView(rootView);
+        fragmentMainBinding = DataBindingUtil.bind(rootView);
+        initView();
         return rootView;
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mTodoTaskViewModel = new ViewModelProvider(this).get(TodoTaskViewModel.class);
-        subscribeToModel(mTodoTaskViewModel.getAllTodoTasks());
+        ViewModelFactory factory = ViewModelFactory.getInstance(requireActivity().getApplication());
+        mMainTodoTaskViewModel = new ViewModelProvider(requireActivity(), factory).get(MainTodoTaskViewModel.class);
+        subscribeToModel(mMainTodoTaskViewModel.getAllTodoTasks());
     }
 
-    private void initView(View rootView){
-        mRecyclerView = rootView.findViewById(R.id.list_task);
-        btnAdd = rootView.findViewById(R.id.btn_add);
-        btnAdd.setOnClickListener(v -> {
-            ((MainActivity)requireActivity()).startCreateTaskFragment();
-        });
+    private void initView() {
 
+        fragmentMainBinding.btnAdd.setOnClickListener(v -> {
+            ((MainActivity) requireActivity()).startCreateTaskFragment();
+        });
         mTaskLisAdapter = new TaskLisAdapter(new OnItemClickListener() {
             @Override
             public void onItemClick(TodoTask todoTask) {
-                ((MainActivity)requireActivity()).startDetailFragment(todoTask.getId());
+                ((MainActivity) requireActivity()).startDetailFragment(todoTask.getId());
             }
 
             @Override
             public void onItemEditClick(TodoTask todoTask) {
-                ((MainActivity)requireActivity()).startEditTaskFragment(todoTask.getId());
+                ((MainActivity) requireActivity()).startEditTaskFragment(todoTask.getId());
             }
 
             @Override
             public void onItemDeleteClick(TodoTask todoTask) {
-                mTodoTaskViewModel.deleteTask(todoTask.getId());
+                mMainTodoTaskViewModel.deleteTask(todoTask.getId());
             }
         });
-        mRecyclerView.setAdapter(mTaskLisAdapter);
+        fragmentMainBinding.listTask.setAdapter(mTaskLisAdapter);
     }
 
-    private void subscribeToModel(LiveData<List<TodoTask>> liveData){
+    private void subscribeToModel(LiveData<List<TodoTask>> liveData) {
         liveData.observe(getViewLifecycleOwner(), todoTasks -> {
             mTaskLisAdapter.setTodoTaskList(todoTasks);
         });

@@ -3,15 +3,14 @@ package com.example.mvvm_todoapp.ui.main.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.mvvm_todoapp.R;
 import com.example.mvvm_todoapp.data.model.TodoTask;
-import com.example.mvvm_todoapp.utils.Utilities;
+import com.example.mvvm_todoapp.databinding.TodoTaskItemBinding;
 
 import java.util.List;
 
@@ -27,8 +26,8 @@ public class TaskLisAdapter extends RecyclerView.Adapter<TaskLisAdapter.TaskView
         setHasStableIds(true);
     }
 
-    public void setTodoTaskList(List<TodoTask> todoTaskList){
-        if(mTodoTaskList == null){
+    public void setTodoTaskList(List<TodoTask> todoTaskList) {
+        if (mTodoTaskList == null) {
             mTodoTaskList = todoTaskList;
         } else {
             mTodoTaskList.clear();
@@ -38,7 +37,7 @@ public class TaskLisAdapter extends RecyclerView.Adapter<TaskLisAdapter.TaskView
     }
 
     @Override
-    public void onBindViewHolder( TaskViewHolder holder, int position) {
+    public void onBindViewHolder(TaskViewHolder holder, int position) {
         TodoTask todoTask = mTodoTaskList.get(position);
         holder.bind(todoTask, mOnItemClickListener);
     }
@@ -51,37 +50,22 @@ public class TaskLisAdapter extends RecyclerView.Adapter<TaskLisAdapter.TaskView
     @Override
     public TaskViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.todo_task_item, parent, false);
-        return new TaskViewHolder(itemView);
+        TodoTaskItemBinding todoTaskItemBinding = DataBindingUtil.bind(itemView);
+        return new TaskViewHolder(todoTaskItemBinding);
     }
 
-    class TaskViewHolder extends RecyclerView.ViewHolder{
+    class TaskViewHolder extends RecyclerView.ViewHolder {
+        private TodoTaskItemBinding todoTaskItemBinding;
 
-        private final TextView tvTaskName;
-        private final TextView tvDate;
-        private final TextView tvDescription;
-        private final ImageButton btnDelete;
-        private final ImageButton btnEdit;
+        public TaskViewHolder(TodoTaskItemBinding todoTaskItemBinding) {
+            super(todoTaskItemBinding.getRoot());
+            this.todoTaskItemBinding = todoTaskItemBinding;
 
-        public TaskViewHolder( View itemView) {
-            super(itemView);
-            tvTaskName = itemView.findViewById(R.id.tv_task_name);
-            tvDate = itemView.findViewById(R.id.tv_date);
-            tvDescription = itemView.findViewById(R.id.tv_description);
-            btnDelete = itemView.findViewById(R.id.btn_delete);
-            btnEdit = itemView.findViewById(R.id.btn_edit);
         }
 
-        public void bind(TodoTask todoTask, OnItemClickListener onItemClickListener){
-            itemView.setOnClickListener(null);
-            tvTaskName.setText(todoTask.getTaskName());
-            tvDate.setText(Utilities.convertDateToString(todoTask.getDate()));
-            tvDescription.setText(todoTask.getDescription());
-            itemView.setOnClickListener(v -> {
-                onItemClickListener.onItemClick(todoTask);
-            });
-
-            btnDelete.setOnClickListener(v -> onItemClickListener.onItemDeleteClick(todoTask));
-            btnEdit.setOnClickListener(v -> onItemClickListener.onItemEditClick(todoTask));
+        public void bind(TodoTask todoTask, OnItemClickListener onItemClickListener) {
+            todoTaskItemBinding.setTodoTask(todoTask);
+            todoTaskItemBinding.setListen(onItemClickListener);
         }
     }
 }

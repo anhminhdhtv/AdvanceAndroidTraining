@@ -6,6 +6,7 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity(tableName = "task_table")
@@ -18,12 +19,13 @@ public class TodoTask {
     private String mTaskName;
 
     @ColumnInfo(name = "date")
-    private Date mDate;
+    private LocalDate mDate;
 
     @ColumnInfo(name = "description")
     private String mDescription;
 
-    public TodoTask(String taskName, Date date, String description) {
+    @Ignore
+    public TodoTask(String taskName, LocalDate date, String description) {
         this.mTaskName = taskName;
         this.mDate = date;
         this.mDescription = description;
@@ -47,11 +49,11 @@ public class TodoTask {
         this.mTaskName = mTaskName;
     }
 
-    public Date getDate() {
+    public LocalDate getDate() {
         return mDate;
     }
 
-    public void setDate(Date mDate) {
+    public void setDate(LocalDate mDate) {
         this.mDate = mDate;
     }
 
