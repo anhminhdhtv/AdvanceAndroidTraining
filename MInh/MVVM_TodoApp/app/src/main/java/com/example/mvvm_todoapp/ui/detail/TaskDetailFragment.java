@@ -27,7 +27,7 @@ public class TaskDetailFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
 
     // TODO: Rename and change types of parameters
-    private int mTaskID;
+    private String mTaskID;
     private TaskDetailViewModel mTaskDetailViewModel;
 
     public TaskDetailFragment() {
@@ -41,10 +41,10 @@ public class TaskDetailFragment extends Fragment {
      * @return A new instance of fragment TaskDetailFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static TaskDetailFragment newInstance(int id) {
+    public static TaskDetailFragment newInstance(String id) {
         TaskDetailFragment fragment = new TaskDetailFragment();
         Bundle args = new Bundle();
-        args.putInt(ARG_PARAM1, id);
+        args.putString(ARG_PARAM1, id);
         fragment.setArguments(args);
         return fragment;
     }
@@ -53,7 +53,7 @@ public class TaskDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mTaskID = getArguments().getInt(ARG_PARAM1);
+            mTaskID = getArguments().getString(ARG_PARAM1);
         }
     }
 

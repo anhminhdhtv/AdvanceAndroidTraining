@@ -31,7 +31,7 @@ public class TaskInputFragment extends Fragment {
     private static final String ARG_PARAM2 = "param2";
     // TODO: Rename and change types of parameters
     private int mInputType;
-    private int mTaskID;
+    private String mTaskID;
     private TaskInputViewModel mTaskInputViewModel;
 
     public TaskInputFragment() {
@@ -45,11 +45,11 @@ public class TaskInputFragment extends Fragment {
      * @return A new instance of fragment TaskInputFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static TaskInputFragment newInstance(int inputType, int taskId) {
+    public static TaskInputFragment newInstance(int inputType, String taskId) {
         TaskInputFragment fragment = new TaskInputFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_PARAM1, inputType);
-        args.putInt(ARG_PARAM2, taskId);
+        args.putString(ARG_PARAM2, taskId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -59,7 +59,7 @@ public class TaskInputFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mInputType = getArguments().getInt(ARG_PARAM1);
-            mTaskID = getArguments().getInt(ARG_PARAM2);
+            mTaskID = getArguments().getString(ARG_PARAM2);
         }
     }
 

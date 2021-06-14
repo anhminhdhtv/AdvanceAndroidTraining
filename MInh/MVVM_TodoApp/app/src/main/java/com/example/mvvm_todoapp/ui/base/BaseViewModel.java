@@ -20,13 +20,13 @@ public abstract class BaseViewModel extends AndroidViewModel {
         return mTodoTaskRepository;
     }
 
-    public void deleteTask(int taskID) {
+    public void deleteTask(String taskID) {
         getTodoTaskRepository().deleteTask(taskID);
     }
 
     private LiveData<TodoTask> mTodoTask;
 
-    public void loadTodoTaskByID(int ID){
+    public void loadTodoTaskByID(String ID){
         if(mTodoTask != null){
             mTodoTask = null;
         }
@@ -37,7 +37,7 @@ public abstract class BaseViewModel extends AndroidViewModel {
         return mTodoTask;
     }
 
-    public LiveData<TodoTask> getTodoTaskById(int ID){
+    public LiveData<TodoTask> getTodoTaskById(String ID){
         return mTodoTaskRepository.getTaskByID(ID);
     }
 }

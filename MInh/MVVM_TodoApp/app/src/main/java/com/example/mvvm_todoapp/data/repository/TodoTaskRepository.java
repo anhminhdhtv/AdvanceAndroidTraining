@@ -35,7 +35,7 @@ public class TodoTaskRepository {
         return mTodoTaskDao.getAllTask();
     }
 
-    public LiveData<TodoTask> getTaskByID(int ID) {
+    public LiveData<TodoTask> getTaskByID(String ID) {
         return mTodoTaskDao.getTaskByID(ID);
     }
 
@@ -57,7 +57,7 @@ public class TodoTaskRepository {
         mTodoTaskDao.deleteAllTask();
     }
 
-    public void deleteTask(int taskID) {
+    public void deleteTask(String taskID) {
         TodoTaskDatabase.databaseWriteExecutor.execute(()->{
             mTodoTaskDao.deleteTask(taskID);
         });

@@ -21,7 +21,7 @@ public interface TodoTaskDao {
     void insertTasks(TodoTask... todoTasks);
 
     @Query("DELETE FROM task_table WHERE id = :taskID")
-    void deleteTask(int taskID);
+    void deleteTask(String taskID);
 
     @Query("DELETE FROM task_table")
     void deleteAllTask();
@@ -33,5 +33,5 @@ public interface TodoTaskDao {
     LiveData<List<TodoTask>> getAllTask();
 
     @Query("SELECT * FROM task_table WHERE id = :id")
-    LiveData<TodoTask> getTaskByID(int id);
+    LiveData<TodoTask> getTaskByID(String id);
 }

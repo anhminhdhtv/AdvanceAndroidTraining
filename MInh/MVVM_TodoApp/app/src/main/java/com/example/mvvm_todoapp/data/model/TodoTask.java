@@ -5,15 +5,16 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
+import java.util.UUID;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 @Entity(tableName = "task_table")
 public class TodoTask {
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey()
     @ColumnInfo(name = "id")
-    private int id = 0;
+    @NonNull
+    private String id;
 
     @ColumnInfo(name = "task_name")
     private String mTaskName;
@@ -31,13 +32,15 @@ public class TodoTask {
         this.mDescription = description;
     }
 
-    public TodoTask(){}
+    public TodoTask(){
+        setId(UUID.randomUUID().toString());
+    }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
