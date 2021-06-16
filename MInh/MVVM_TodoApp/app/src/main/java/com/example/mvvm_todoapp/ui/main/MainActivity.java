@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, new MainFragment(), MainFragment.class.getSimpleName()).commit();
     }
 
-    public void startDetailFragment(int taskID){
+    public void startDetailFragment(String taskID){
         getSupportFragmentManager().beginTransaction().add(
                 R.id.fragment_container,
                 TaskDetailFragment.newInstance(taskID),
@@ -34,12 +34,12 @@ public class MainActivity extends AppCompatActivity {
     public void startCreateTaskFragment(){
         getSupportFragmentManager().beginTransaction().add(
                 R.id.fragment_container,
-                TaskInputFragment.newInstance(TaskInputFragment.TYPE_CREATE, 0),
+                TaskInputFragment.newInstance(TaskInputFragment.TYPE_CREATE, ""),
                 TaskInputFragment.class.getSimpleName()
         ).commit();
     }
 
-    public void startEditTaskFragment(int ID){
+    public void startEditTaskFragment(String ID){
         getSupportFragmentManager().beginTransaction().add(
                 R.id.fragment_container,
                 TaskInputFragment.newInstance(TaskInputFragment.TYPE_EDIT, ID),

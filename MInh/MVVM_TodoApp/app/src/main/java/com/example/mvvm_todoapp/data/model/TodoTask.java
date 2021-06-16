@@ -5,6 +5,10 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
+
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 import java.util.UUID;
 
 import java.time.LocalDate;
@@ -16,17 +20,24 @@ public class TodoTask {
     @NonNull
     private String id;
 
+    @Expose
+    @SerializedName("task_name")
     @ColumnInfo(name = "task_name")
     private String mTaskName;
 
+    @Expose
+    @SerializedName("date")
     @ColumnInfo(name = "date")
     private LocalDate mDate;
 
+    @Expose
+    @SerializedName("description")
     @ColumnInfo(name = "description")
     private String mDescription;
 
     @Ignore
-    public TodoTask(String taskName, LocalDate date, String description) {
+    public TodoTask(String id, String taskName, LocalDate date, String description) {
+        this.id = id;
         this.mTaskName = taskName;
         this.mDate = date;
         this.mDescription = description;

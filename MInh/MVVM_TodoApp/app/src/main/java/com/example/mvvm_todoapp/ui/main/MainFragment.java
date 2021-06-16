@@ -8,17 +8,18 @@ import android.view.ViewGroup;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.ViewModelProvider;
 
+import com.example.mvvm_todoapp.MyApplication;
 import com.example.mvvm_todoapp.R;
 import com.example.mvvm_todoapp.data.model.TodoTask;
 import com.example.mvvm_todoapp.databinding.FragmentMainBinding;
 import com.example.mvvm_todoapp.ui.MainActivity;
-import com.example.mvvm_todoapp.ui.base.ViewModelFactory;
 import com.example.mvvm_todoapp.ui.main.adapter.OnItemClickListener;
 import com.example.mvvm_todoapp.ui.main.adapter.TaskLisAdapter;
 
 import java.util.List;
+
+import javax.inject.Inject;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -32,7 +33,8 @@ public class MainFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    private MainTodoTaskViewModel mMainTodoTaskViewModel;
+    @Inject
+    public MainTodoTaskViewModel mMainTodoTaskViewModel;
     private FragmentMainBinding fragmentMainBinding;
     private TaskLisAdapter mTaskLisAdapter;
 
@@ -69,6 +71,7 @@ public class MainFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        ((MyApplication)requireActivity().getApplicationContext()).getComponent().inject(this);
     }
 
     @Override
@@ -84,8 +87,6 @@ public class MainFragment extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ViewModelFactory factory = ViewModelFactory.getInstance(requireActivity().getApplication());
-        mMainTodoTaskViewModel = new ViewModelProvider(requireActivity(), factory).get(MainTodoTaskViewModel.class);
         subscribeToModel(mMainTodoTaskViewModel.getAllTodoTasks());
     }
 

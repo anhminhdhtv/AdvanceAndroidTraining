@@ -1,42 +1,72 @@
 package com.example.mvvm_todoapp.data.repository;
 
-import android.app.Application;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 
 import com.example.mvvm_todoapp.data.db.TodoTaskDatabase;
 import com.example.mvvm_todoapp.data.db.dao.TodoTaskDao;
 import com.example.mvvm_todoapp.data.model.TodoTask;
-
+import com.example.mvvm_todoapp.data.remote.ApiResponse;
+import com.example.mvvm_todoapp.data.remote.Service;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class TodoTaskRepository {
-    private volatile static TodoTaskRepository INSTANCE = null;
-    private TodoTaskDao mTodoTaskDao;
+    private final TodoTaskDao mTodoTaskDao;
+    private final Service mTodoService;
 
-    private TodoTaskRepository(Application application) {
-        TodoTaskDatabase db = TodoTaskDatabase.getDatabase(application);
-        mTodoTaskDao = db.todoTaskDao();
+    @Inject
+    public TodoTaskRepository(TodoTaskDao todoTaskDao, Service mTodoService) {
+        mTodoTaskDao = todoTaskDao;
+        this.mTodoService = mTodoService;
     }
 
-    public static TodoTaskRepository getInstance(Application application) {
-        if (INSTANCE == null) {
-            synchronized (TodoTaskRepository.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new TodoTaskRepository(application);
-                }
+    public LiveData<Resource<List<TodoTask>>> getAllTodoTasks() {
+        return new NetworkBoundResource<List<TodoTask>, List<TodoTask>>(){
+
+            @Override
+            protected void saveCallResult(@NonNull List<TodoTask> item) {
+                mTodoTaskDao.insertTasks(item);
             }
-        }
-        return INSTANCE;
+
+            @NonNull
+            @Override
+            protected LiveData<List<TodoTask>> loadFromDb() {
+                return mTodoTaskDao.getAllTask();
+            }
+
+            @NonNull
+            @Override
+            protected LiveData<ApiResponse<List<TodoTask>>> createCall() {
+                return mTodoService.getAllTasks();
+            }
+        }.getAsLiveData();
     }
 
+    public LiveData<Resource<TodoTask>> getTaskByID(String ID) {
+        return new NetworkBoundResource<TodoTask, TodoTask>(){
 
-    public LiveData<List<TodoTask>> getAllTodoTasks() {
-        return mTodoTaskDao.getAllTask();
-    }
+            @Override
+            protected void saveCallResult(@NonNull TodoTask item) {
+                mTodoTaskDao.insertTask(item);
+            }
 
-    public LiveData<TodoTask> getTaskByID(String ID) {
-        return mTodoTaskDao.getTaskByID(ID);
+            @NonNull
+            @Override
+            protected LiveData<TodoTask> loadFromDb() {
+                return mTodoTaskDao.getTaskByID(ID);
+            }
+
+            @NonNull
+            @Override
+            protected LiveData<ApiResponse<TodoTask>> createCall() {
+                return mTodoService.getTaskByID(ID);
+            }
+        }.getAsLiveData();
     }
 
     public void insertTodoTask(TodoTask todoTask) {
@@ -45,9 +75,6 @@ public class TodoTaskRepository {
         });
     }
 
-    public void insertTodoTasks(TodoTask... todoTasks) {
-        mTodoTaskDao.insertTasks(todoTasks);
-    }
 
     public void update(TodoTask todoTask) {
         mTodoTaskDao.update(todoTask);

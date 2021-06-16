@@ -7,14 +7,15 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
+import com.example.mvvm_todoapp.MyApplication;
 import com.example.mvvm_todoapp.R;
 import com.example.mvvm_todoapp.data.model.TodoTask;
 import com.example.mvvm_todoapp.databinding.FragmentTaskInputBinding;
-import com.example.mvvm_todoapp.ui.base.ViewModelFactory;
 
 import java.time.LocalDate;
+
+import javax.inject.Inject;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -23,16 +24,18 @@ import java.time.LocalDate;
  */
 public class TaskInputFragment extends Fragment {
 
+    @Inject
+    public TaskInputViewModel mTaskInputViewModel;
+
     public static final int TYPE_CREATE = 0;
     public static final int TYPE_EDIT = 1;
-    // TODO: Rename parameter arguments, choose names that match
+
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-    // TODO: Rename and change types of parameters
+
     private int mInputType;
     private String mTaskID;
-    private TaskInputViewModel mTaskInputViewModel;
 
     public TaskInputFragment() {
         // Required empty public constructor
@@ -61,6 +64,8 @@ public class TaskInputFragment extends Fragment {
             mInputType = getArguments().getInt(ARG_PARAM1);
             mTaskID = getArguments().getString(ARG_PARAM2);
         }
+        ((MyApplication) requireActivity().getApplicationContext()).getComponent().inject(this);
+
     }
 
     @Override
@@ -75,8 +80,6 @@ public class TaskInputFragment extends Fragment {
     }
 
     private void initView() {
-        ViewModelFactory factory = ViewModelFactory.getInstance(requireActivity().getApplication());
-        mTaskInputViewModel = new ViewModelProvider(requireActivity(), factory).get(TaskInputViewModel.class);
 
         if (mInputType == TYPE_CREATE) {
             mTaskInputViewModel.setFragmentTitle("Create new task");

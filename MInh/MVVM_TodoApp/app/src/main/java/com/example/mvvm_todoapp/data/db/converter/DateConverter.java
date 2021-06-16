@@ -1,11 +1,9 @@
 package com.example.mvvm_todoapp.data.db.converter;
 
-import android.icu.util.LocaleData;
 
 import androidx.room.TypeConverter;
 
 import java.time.LocalDate;
-import java.util.Date;
 
 public class DateConverter {
     @TypeConverter

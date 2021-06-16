@@ -6,13 +6,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
+import com.example.mvvm_todoapp.MyApplication;
 import com.example.mvvm_todoapp.R;
 import com.example.mvvm_todoapp.data.model.TodoTask;
 import com.example.mvvm_todoapp.databinding.FragmentTaskDetailBinding;
-import com.example.mvvm_todoapp.ui.base.ViewModelFactory;
 import com.example.mvvm_todoapp.ui.MainActivity;
+
+import javax.inject.Inject;
 
 
 /**
@@ -22,13 +23,13 @@ import com.example.mvvm_todoapp.ui.MainActivity;
  */
 public class TaskDetailFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
+    @Inject
+    public TaskDetailViewModel mTaskDetailViewModel;
+
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
-
-    // TODO: Rename and change types of parameters
     private String mTaskID;
-    private TaskDetailViewModel mTaskDetailViewModel;
+
 
     public TaskDetailFragment() {
         // Required empty public constructor
@@ -55,6 +56,7 @@ public class TaskDetailFragment extends Fragment {
         if (getArguments() != null) {
             mTaskID = getArguments().getString(ARG_PARAM1);
         }
+        ((MyApplication) requireActivity().getApplicationContext()).getComponent().inject(this);
     }
 
     @Override
@@ -68,8 +70,6 @@ public class TaskDetailFragment extends Fragment {
     }
 
     private void initViewHolder() {
-        ViewModelFactory factory = ViewModelFactory.getInstance(requireActivity().getApplication());
-        mTaskDetailViewModel = new ViewModelProvider(requireActivity(), factory).get(TaskDetailViewModel.class);
         mTaskDetailViewModel.loadTodoTaskByID(mTaskID);
     }
 

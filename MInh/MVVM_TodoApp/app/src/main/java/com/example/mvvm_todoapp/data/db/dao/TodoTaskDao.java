@@ -18,7 +18,7 @@ public interface TodoTaskDao {
     void insertTask(TodoTask todoTask);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertTasks(TodoTask... todoTasks);
+    void insertTasks(List<TodoTask> todoTasks);
 
     @Query("DELETE FROM task_table WHERE id = :taskID")
     void deleteTask(String taskID);

@@ -30,4 +30,6 @@ ext {
     lifecycleVersion = '2.2.0'
     materialVersion = '1.2.1'
     roomVersion = '2.2.5'
+    retrofitVersion = '2.9.0'
+    dagger_version  = '2.37'
 }
