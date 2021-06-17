@@ -3,12 +3,14 @@ package com.mrrobot.mvvm_todolist.data.model;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 @Entity(tableName = "todo")
 public class Todo implements Serializable {
@@ -33,14 +35,16 @@ public class Todo implements Serializable {
     @ColumnInfo(name = "description")
     private String description;
 
-    public Todo() {
-    }
 
+    @Ignore
     public Todo(String id, String taskName, String date, String description) {
         this.id = id;
         this.taskName = taskName;
         this.date = date;
         this.description = description;
+    }
+    public Todo(){
+        setId(UUID.randomUUID().toString());
     }
 
     public String getId() {

@@ -15,10 +15,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import com.mrrobot.mvvm_todolist.MyApplication;
 import com.mrrobot.mvvm_todolist.R;
 import com.mrrobot.mvvm_todolist.data.model.Todo;
+import com.mrrobot.mvvm_todolist.databinding.FragmentDetailBinding;
+import com.mrrobot.mvvm_todolist.databinding.FragmentInputBinding;
 import com.mrrobot.mvvm_todolist.ui.detail.DetailFragment;
 import com.mrrobot.mvvm_todolist.ui.detail.TaskDetailViewModel;
+import com.mrrobot.mvvm_todolist.ui.main.apdapter.MainViewModel;
+import com.mrrobot.mvvm_todolist.utils.AppContainer;
 
 import java.sql.Time;
 import java.time.LocalDate;
@@ -76,6 +81,8 @@ public class InputFragment extends Fragment {
             mTaskID = getArguments().getString(ARG_PARAM1);
             mTypeAction = getArguments().getInt(ARG_PARAM2);
         }
+        AppContainer appContainer = ((MyApplication) requireActivity().getApplicationContext()).appContainer;
+        inputViewModel = new InputViewModel(appContainer.repositoryData);
     }
 
     @Override
@@ -83,62 +90,93 @@ public class InputFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_input, container, false);
-        initLayout(view);
-        initData();
-        initAction();
+//        initLayout(view);
+//        initData();
+//        initAction();
+
+        initDataBinding(view);
         return view;
     }
 
-    private void initAction() {
-        imgCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                requireFragmentManager().beginTransaction().remove(InputFragment.this).commit();
-            }
-        });
-
-        btnAction.setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onClick(View v) {
-                if(mTypeAction==0){
-                    Todo todo = new Todo(LocalDateTime.now().toString(),edtTaskName.getText().toString(),edtDate.getText().toString(),edtDescription.getText().toString());
-                    inputViewModel.insertTodo(todo);
-                    requireFragmentManager().beginTransaction().remove(InputFragment.this).commit();
-                }else {
-                    Todo todo = new Todo(todoSelected.getId(),edtTaskName.getText().toString(),edtDate.getText().toString(),edtDescription.getText().toString());
-                    inputViewModel.updateTodo(todo);
-                }
-                requireFragmentManager().beginTransaction().remove(InputFragment.this).commit();
-            }
-        });
-    }
-
-    private void initData() {
-        inputViewModel.loadTodoById(mTaskID).observe(requireActivity(), new Observer<Todo>() {
-            @Override
-            public void onChanged(Todo todo) {
-                todoSelected = todo;
-                if(todoSelected!=null){
-                    edtTaskName.setText(todoSelected.getTaskName());
-                    edtDate.setText(todoSelected.getDate());
-                    edtDescription.setText(todoSelected.getDescription());
-                }
-            }
-        });
-    }
-
-    private void initLayout(View view) {
-        inputViewModel = new ViewModelProvider(requireActivity()).get(InputViewModel.class);
-        edtTaskName = view.findViewById(R.id.editTextTaskName);
-        edtDate = view.findViewById(R.id.editTextDate);
-        edtDescription = view.findViewById(R.id.editTextDescription);
-        btnAction = view.findViewById(R.id.buttonAction);
-        imgCancel = view.findViewById(R.id.btn_back_from_edit);
+    private void initDataBinding(View view) {
+        FragmentInputBinding fragmentInputBinding = FragmentInputBinding.bind(view);
+        fragmentInputBinding.setLifecycleOwner(getViewLifecycleOwner());
+        fragmentInputBinding.setViewModel(inputViewModel);
+        fragmentInputBinding.setTodo(inputViewModel.todoTask);
         if(mTypeAction==0){
-            btnAction.setText("Create");
+            inputViewModel.createNewTodoTask();
         } else {
-            btnAction.setText("Edit");
+            inputViewModel.getTodoByID(mTaskID).observe(getViewLifecycleOwner(), todo -> inputViewModel.todoTask.setValue(todo));
         }
+        fragmentInputBinding.setListener(new TaskInputListener() {
+            @Override
+            public void onActionClick() {
+                if(mTypeAction==0){
+                    inputViewModel.insertTodo();
+                } else {
+                    inputViewModel.update();
+                }
+                requireFragmentManager().beginTransaction().remove(InputFragment.this).commit();
+            }
+
+            @Override
+            public void onBackClick() {
+
+                requireFragmentManager().beginTransaction().remove(InputFragment.this).commit();
+            }
+        });
     }
+
+//    private void initAction() {
+//        imgCancel.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                requireFragmentManager().beginTransaction().remove(InputFragment.this).commit();
+//            }
+//        });
+//
+//        btnAction.setOnClickListener(new View.OnClickListener() {
+//            @RequiresApi(api = Build.VERSION_CODES.O)
+//            @Override
+//            public void onClick(View v) {
+//                if(mTypeAction==0){
+//                    Todo todo = new Todo(LocalDateTime.now().toString(),edtTaskName.getText().toString(),edtDate.getText().toString(),edtDescription.getText().toString());
+//                    inputViewModel.insertTodo(todo);
+//                    requireFragmentManager().beginTransaction().remove(InputFragment.this).commit();
+//                }else {
+//                    Todo todo = new Todo(todoSelected.getId(),edtTaskName.getText().toString(),edtDate.getText().toString(),edtDescription.getText().toString());
+//                    inputViewModel.updateTodo(todo);
+//                }
+//                requireFragmentManager().beginTransaction().remove(InputFragment.this).commit();
+//            }
+//        });
+//    }
+//
+//    private void initData() {
+//        inputViewModel.loadTodoById(mTaskID).observe(requireActivity(), new Observer<Todo>() {
+//            @Override
+//            public void onChanged(Todo todo) {
+//                todoSelected = todo;
+//                if(todoSelected!=null){
+//                    edtTaskName.setText(todoSelected.getTaskName());
+//                    edtDate.setText(todoSelected.getDate());
+//                    edtDescription.setText(todoSelected.getDescription());
+//                }
+//            }
+//        });
+//    }
+//
+//    private void initLayout(View view) {
+//        //inputViewModel = new ViewModelProvider(requireActivity()).get(InputViewModel.class);
+//        edtTaskName = view.findViewById(R.id.editTextTaskName);
+//        edtDate = view.findViewById(R.id.editTextDate);
+//        edtDescription = view.findViewById(R.id.editTextDescription);
+//        btnAction = view.findViewById(R.id.buttonAction);
+//        imgCancel = view.findViewById(R.id.btn_back_from_edit);
+//        if(mTypeAction==0){
+//            btnAction.setText("Create");
+//        } else {
+//            btnAction.setText("Edit");
+//        }
+//    }
 }

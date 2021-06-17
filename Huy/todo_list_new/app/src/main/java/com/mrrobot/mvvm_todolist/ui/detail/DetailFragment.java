@@ -15,8 +15,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mrrobot.mvvm_todolist.MainActivity;
+import com.mrrobot.mvvm_todolist.MyApplication;
 import com.mrrobot.mvvm_todolist.R;
 import com.mrrobot.mvvm_todolist.data.model.Todo;
+import com.mrrobot.mvvm_todolist.databinding.FragmentDetailBinding;
+import com.mrrobot.mvvm_todolist.ui.main.apdapter.MainViewModel;
+import com.mrrobot.mvvm_todolist.utils.AppContainer;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -63,6 +67,9 @@ public class DetailFragment extends Fragment {
         if (getArguments() != null) {
             mTaskID = getArguments().getString(ARG_PARAM1);
         }
+
+        AppContainer appContainer = ((MyApplication) requireActivity().getApplicationContext()).appContainer;
+        taskDetailViewModel = new TaskDetailViewModel(appContainer.repositoryData);
     }
 
     @Override
@@ -71,56 +78,67 @@ public class DetailFragment extends Fragment {
         // Inflate the layout for this fragment
         Toast.makeText(getContext(), "Hello "+ mTaskID, Toast.LENGTH_SHORT).show();
         View view = inflater.inflate(R.layout.fragment_detail, container, false);
-        initLayout(view);
-        initData();
-        initAction();
+        initDataBinding(view);
         return view;
     }
 
-    private void initAction() {
-        imgCancel.setOnClickListener(new View.OnClickListener() {
+    private void initDataBinding(View view) {
+        FragmentDetailBinding fragmentDetailBinding = FragmentDetailBinding.bind(view);
+        fragmentDetailBinding.setLifecycleOwner(getViewLifecycleOwner());
+        fragmentDetailBinding.setViewModel(taskDetailViewModel);
+        taskDetailViewModel.loadTodoById(mTaskID);
+        fragmentDetailBinding.setListener(new TaskDetailListener() {
             @Override
-            public void onClick(View v) {
-                requireFragmentManager().beginTransaction().remove(DetailFragment.this).commit();
+            public void onEditClick(String todoTask) {
+                Toast.makeText(getContext(), "Hello onEditClick", Toast.LENGTH_SHORT).show();
+                ((MainActivity) requireActivity()).startInputFragment(todoTask,1);
             }
-        });
-        btnDelete.setOnClickListener(new View.OnClickListener() {
+
             @Override
-            public void onClick(View v) {
-                requireFragmentManager().beginTransaction().remove(DetailFragment.this).commit();
+            public void onDeleteClick(Todo todoTask) {
+                Toast.makeText(getContext(), "Hello onDeleteClick", Toast.LENGTH_SHORT).show();
                 taskDetailViewModel.deleteTodo(todoSelected);
+                requireFragmentManager().beginTransaction().remove(DetailFragment.this).commit();
             }
-        });
 
-        btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                ((MainActivity) requireActivity()).startInputFragment(mTaskID,1);
+            public void onBackClick() {
+                requireFragmentManager().beginTransaction().remove(DetailFragment.this).commit();
             }
         });
     }
 
-    private void initData() {
-        taskDetailViewModel.loadTodoById(mTaskID).observe(requireActivity(), new Observer<Todo>() {
-            @Override
-            public void onChanged(Todo todo) {
-                todoSelected = todo;
-                if(todoSelected!=null) {
-                    txtTaskName.setText(todoSelected.getTaskName());
-                    txtDescription.setText(todoSelected.getDescription());
-                    txtDate.setText(todoSelected.getDate());
-                }
-            }
-        });
-    }
+//    private void initAction() {
+//        imgCancel.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                requireFragmentManager().beginTransaction().remove(DetailFragment.this).commit();
+//            }
+//        });
+//        btnDelete.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                requireFragmentManager().beginTransaction().remove(DetailFragment.this).commit();
+//                taskDetailViewModel.deleteTodo(todoSelected);
+//            }
+//        });
+//
+//        btnEdit.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                ((MainActivity) requireActivity()).startInputFragment(mTaskID,1);
+//            }
+//        });
+//    }
 
-    private void initLayout(View view) {
-        taskDetailViewModel = new  ViewModelProvider(requireActivity()).get(TaskDetailViewModel.class);
-        txtDate = view.findViewById(R.id.textViewDate);
-        txtDescription = view.findViewById(R.id.textViewDescription);
-        txtTaskName = view.findViewById(R.id.textViewNameTask);
-        btnDelete = view.findViewById(R.id.buttonDelete);
-        btnEdit = view.findViewById(R.id.buttonEdit);
-        imgCancel = view.findViewById(R.id.btn_back);
-    }
+
+//    private void initLayout(View view) {
+//        //taskDetailViewModel = new  ViewModelProvider(requireActivity()).get(TaskDetailViewModel.class);
+//        txtDate = view.findViewById(R.id.textViewDate);
+//        txtDescription = view.findViewById(R.id.textViewDescription);
+//        txtTaskName = view.findViewById(R.id.textViewNameTask);
+//        btnDelete = view.findViewById(R.id.buttonDelete);
+//        btnEdit = view.findViewById(R.id.buttonEdit);
+//        imgCancel = view.findViewById(R.id.btn_back);
+//    }
 }

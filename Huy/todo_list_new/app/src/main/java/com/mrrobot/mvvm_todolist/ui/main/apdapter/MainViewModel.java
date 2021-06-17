@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.mrrobot.mvvm_todolist.MyApplication;
+import com.mrrobot.mvvm_todolist.data.db.AppDatabase;
 import com.mrrobot.mvvm_todolist.data.model.Todo;
 import com.mrrobot.mvvm_todolist.data.repository.RepositoryData;
 import com.mrrobot.mvvm_todolist.utils.AppContainer;
@@ -16,7 +17,6 @@ import java.util.List;
 
 public class MainViewModel extends ViewModel {
     LiveData<List<Todo>> listTodo;
-    Integer typeAction;
     private RepositoryData repositoryData;
     public MainViewModel(RepositoryData repositoryData) {
         this.repositoryData = repositoryData;
@@ -32,12 +32,22 @@ public class MainViewModel extends ViewModel {
     }
 
     public  void insertTodo(Todo todo){
-        repositoryData.insertTodo(todo);
+        AppDatabase.databaseWriteExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                repositoryData.insertTodo(todo);
+            }
+        });
+
     }
 
-    public LiveData<List<Todo>> deleteTodo(Todo todo){
-        repositoryData.deleteTodo(todo);
-        return getAllTodoList();
+    public void deleteTodo(Todo todo){
+        AppDatabase.databaseWriteExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                repositoryData.deleteTodo(todo);
+            }
+        });
+        //return getAllTodoList();
     }
-
 }

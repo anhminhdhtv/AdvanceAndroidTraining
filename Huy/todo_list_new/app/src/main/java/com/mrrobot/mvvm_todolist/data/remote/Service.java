@@ -22,7 +22,7 @@ public interface Service {
     LiveData<ApiResponse<List<Todo>>> getAllTasks();
 
     @GET("/api/todo_task/{id}")
-    Call<Todo> getTaskByID(@Path("id")String id);
+    LiveData<ApiResponse<Todo>> getTaskByID(@Path("id")String id);
 
 //    @POST("todo_task")
 //    LiveData<Void> insertTask(@Body Todo todoTask);

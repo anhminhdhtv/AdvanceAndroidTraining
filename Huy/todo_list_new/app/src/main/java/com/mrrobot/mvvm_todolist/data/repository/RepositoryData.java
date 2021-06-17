@@ -28,6 +28,8 @@ import retrofit2.Retrofit;
 public class RepositoryData {
     private TodoDao todoDao;
     private LiveData<List<Todo>> mListTodo;
+
+    LiveData<Todo> todo;
     Service service ;
 
     public RepositoryData(TodoDao todoDao, Service service){
@@ -48,25 +50,37 @@ public class RepositoryData {
         return mListTodo;
     }
     public void insertTodo(Todo todo){
-//        AppDatabase.databaseWriteExecutor.execute(()->{
-//            todoDao.insert(todo);
-//        });
+        AppDatabase.databaseWriteExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                todoDao.insert(todo);
+            }
+        });
     }
     public void deleteTodo(Todo todo){
-//        AppDatabase.databaseWriteExecutor.execute(()->{
-//            todoDao.delete(todo);
-//        });
+        AppDatabase.databaseWriteExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                todoDao.delete(todo);
+            }
+        });
+
     }
     public void updateTodo(Todo todo){
-//        AppDatabase.databaseWriteExecutor.execute(()-> todoDao.update(todo));
+        todoDao.update(todo);
     }
 
     public LiveData<Todo> getTodoById(String id){
-        return todoDao.getTaskByID(id);
+        AppDatabase.databaseWriteExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                todo = todoDao.getTaskByID(id);
+            }
+        });
+        return todo;
     }
 
     public LiveData<Resource<List<Todo>>> getAllTodoListFromServer(){
-
         return new NetworkBoundResource<List<Todo>, List<Todo>>() {
             @Override
             protected void saveCallResult(@NonNull List<Todo> item) {
@@ -83,6 +97,27 @@ public class RepositoryData {
             @Override
             protected LiveData<ApiResponse<List<Todo>>> createCall() {
                 return service.getAllTasks();
+            }
+        }.getAsLiveData();
+    }
+
+    public LiveData<Resource<Todo>> getAllTodoWithID(String id){
+        return new NetworkBoundResource<Todo, Todo>() {
+            @Override
+            protected void saveCallResult(@NonNull Todo item) {
+                //todoDao.insert(item);
+            }
+
+            @NonNull
+            @Override
+            protected LiveData<Todo> loadFromDb() {
+                return todoDao.getTaskByID(id);
+            }
+
+            @NonNull
+            @Override
+            protected LiveData<ApiResponse<Todo>> createCall() {
+                return service.getTaskByID(id);
             }
         }.getAsLiveData();
     }

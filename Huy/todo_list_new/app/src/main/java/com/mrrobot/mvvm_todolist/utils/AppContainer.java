@@ -13,6 +13,7 @@ import androidx.sqlite.db.SupportSQLiteOpenHelper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.mrrobot.mvvm_todolist.MyApplication;
 import com.mrrobot.mvvm_todolist.data.db.AppDatabase;
 import com.mrrobot.mvvm_todolist.data.db.dao.TodoDao;
 import com.mrrobot.mvvm_todolist.data.model.Todo;
@@ -31,10 +32,21 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class AppContainer {
     Application application;
-
+    AppDatabase db;
+    TodoDao todoDao;
+    Service service;
+    public RepositoryData repositoryData;
     public AppContainer(Application application) {
         this.application = application;
+        db= getDatabase(this.application);
+        todoDao= db.getTodoDAO();
+        service= retrofit.create(Service.class);
+        repositoryData = new RepositoryData(todoDao,service);
     }
+//    public Application setApplication(Application application){
+//        this.application = application;
+//        return application;
+//    }
 
     public static final String BASE_URL="https://5fa8f65ac9b4e90016e69cdc.mockapi.io/";
     Gson gson = new GsonBuilder().setLenient().create();
@@ -63,8 +75,5 @@ public class AppContainer {
         }
         return INSTANCE;
     }
-    AppDatabase db = getDatabase(application);
-    TodoDao todoDao = db.getTodoDAO();
-    Service service = retrofit.create(Service.class);
-    public RepositoryData repositoryData = new RepositoryData(todoDao,service);
+
 }

@@ -1,26 +1,19 @@
 package com.mrrobot.mvvm_todolist.ui.detail;
 
-import android.app.Application;
-
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModel;
 
-import com.mrrobot.mvvm_todolist.MainActivity;
-import com.mrrobot.mvvm_todolist.MyApplication;
+import com.mrrobot.mvvm_todolist.data.db.AppDatabase;
 import com.mrrobot.mvvm_todolist.data.model.Todo;
 import com.mrrobot.mvvm_todolist.data.repository.RepositoryData;
-import com.mrrobot.mvvm_todolist.utils.AppContainer;
 
-public class TaskDetailViewModel extends AndroidViewModel {
+public class TaskDetailViewModel extends ViewModel {
 
-    LiveData<Todo> todo;
+    public LiveData<Todo> todo;
     private RepositoryData repositoryData;
 
-    public TaskDetailViewModel(@NonNull Application application) {
-        super(application);
-        AppContainer appContainer = ((MyApplication) getApplication()).appContainer;
-        this.repositoryData = appContainer.repositoryData;
+    public TaskDetailViewModel(RepositoryData repositoryData) {
+        this.repositoryData = repositoryData;
     }
 
     public LiveData<Todo> loadTodoById(String id){

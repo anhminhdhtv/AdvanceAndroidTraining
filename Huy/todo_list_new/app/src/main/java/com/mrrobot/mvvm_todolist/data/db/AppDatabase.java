@@ -22,6 +22,9 @@ public abstract class AppDatabase extends RoomDatabase {
 
     public AppDatabase() {
     }
+    private static final int NUMBER_OF_THREADS = 4;
+    public static final ExecutorService databaseWriteExecutor =
+            Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
 //    private static volatile com.mrrobot.mvvm_todolist.data.db.AppDatabase INSTANCE;
 //    private static final int NUMBER_OF_THREADS = 4;

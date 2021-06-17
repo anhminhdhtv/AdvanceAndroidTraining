@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.activity.OnBackPressedDispatcher;
 import androidx.activity.OnBackPressedDispatcherOwner;
 import androidx.annotation.NonNull;
+import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.Observer;
@@ -23,7 +24,9 @@ import com.mrrobot.mvvm_todolist.MyApplication;
 import com.mrrobot.mvvm_todolist.R;
 import com.mrrobot.mvvm_todolist.data.model.Todo;
 import com.mrrobot.mvvm_todolist.data.repository.RepositoryData;
+import com.mrrobot.mvvm_todolist.databinding.FragmentMainBinding;
 import com.mrrobot.mvvm_todolist.ui.main.apdapter.MainViewModel;
+import com.mrrobot.mvvm_todolist.ui.main.apdapter.OnItemClickListener;
 import com.mrrobot.mvvm_todolist.ui.main.apdapter.TaskListAdapter;
 import com.mrrobot.mvvm_todolist.utils.AppContainer;
 
@@ -95,55 +98,81 @@ public class MainFragment extends Fragment {
     }
 
     private void initLayout(View view) {
-
-        mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
-        mTodoList  = new ArrayList<>();
-        recyclerViewTaskLis = view.findViewById(R.id.recycleViewListTodo);
-        btnAdd = view.findViewById(R.id.btn_add);
-        recyclerViewTaskLis.setHasFixedSize(true);
-        recyclerViewTaskLis.setItemViewCacheSize(10);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false);
-        recyclerViewTaskLis.setLayoutManager(layoutManager);
-
-        btnAdd.setOnClickListener(new View.OnClickListener() {
+        FragmentMainBinding fragmentMainBinding = DataBindingUtil.bind(view);
+        fragmentMainBinding.btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ((MainActivity) requireActivity()).startAddFragment(0);
             }
         });
-        mainViewModel.getAllTodoList().observe(requireActivity(), new Observer<List<Todo>>() {
+        taskListAdapter = new TaskListAdapter(new OnItemClickListener() {
+            @Override
+            public void onItemClick(Todo todoTask) {
+                ((MainActivity) requireActivity()).startDetailFragment(todoTask.getId());
+            }
+
+            @Override
+            public void onItemEditClick(Todo todoTask) {
+                ((MainActivity) requireActivity()).startInputFragment(todoTask.getId(),1);
+            }
+
+            @Override
+            public void onItemDeleteClick(Todo todoTask) {
+                mainViewModel.deleteTodo(todoTask);
+            }
+        });
+
+        fragmentMainBinding.recycleViewListTodo.setAdapter(taskListAdapter);
+        mainViewModel.getAllTodoList().observe(getViewLifecycleOwner(), new Observer<List<Todo>>() {
             @Override
             public void onChanged(List<Todo> todos) {
                 taskListAdapter.updateData(todos);
-                mTodoList = mainViewModel.getAllTodoList().getValue();
             }
         });
-        taskListAdapter = new TaskListAdapter(mTodoList, getContext(), new TaskListAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(View v, int position) {
-                Toast.makeText(getContext(), "Xem chi tiết", Toast.LENGTH_SHORT).show();
-                ((MainActivity) requireActivity()).startDetailFragment(mTodoList.get(position).getId());
-            }
 
-            @Override
-            public void onClickDeleteItem(View v, int position) {
-                Toast.makeText(getContext(), "Xóa todo", Toast.LENGTH_SHORT).show();
-                mainViewModel.deleteTodo(mTodoList.get(position)).observe(requireActivity(), new Observer<List<Todo>>() {
-                    @Override
-                    public void onChanged(List<Todo> todos) {
-                        taskListAdapter.updateData(todos);
-                    }
-                });
-            }
-
-            @Override
-            public void onClickEditItem(View v, int position) {
-                Toast.makeText(getContext(), "Sửa todo", Toast.LENGTH_SHORT).show();
-                ((MainActivity)requireActivity()).startInputFragment(mTodoList.get(position).getId(),1);
-            }
-        });
-        recyclerViewTaskLis.setAdapter(taskListAdapter);
-        taskListAdapter.notifyDataSetChanged();
+//        //mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
+//        mTodoList  = new ArrayList<>();
+//        recyclerViewTaskLis = view.findViewById(R.id.recycleViewListTodo);
+//        btnAdd = view.findViewById(R.id.btn_add);
+//        recyclerViewTaskLis.setHasFixedSize(true);
+//        recyclerViewTaskLis.setItemViewCacheSize(10);
+//        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false);
+//        recyclerViewTaskLis.setLayoutManager(layoutManager);
+//
+//        btnAdd.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//            }
+//        });
+//        mainViewModel.getAllTodoList().observe(requireActivity(), new Observer<List<Todo>>() {
+//            @Override
+//            public void onChanged(List<Todo> todos) {
+//                taskListAdapter.updateData(todos);
+//                mTodoList = mainViewModel.getAllTodoList().getValue();
+//            }
+//        });
+//        taskListAdapter = new TaskListAdapter(mTodoList, getContext(), new TaskListAdapter.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(View v, int position) {
+//                Toast.makeText(getContext(), "Xem chi tiết", Toast.LENGTH_SHORT).show();
+//                ((MainActivity) requireActivity()).startDetailFragment(mTodoList.get(position).getId());
+//            }
+//
+//            @Override
+//            public void onClickDeleteItem(View v, int position) {
+//                Toast.makeText(getContext(), "Xóa todo", Toast.LENGTH_SHORT).show();
+//                mainViewModel.deleteTodo(mTodoList.get(position));
+//            }
+//
+//            @Override
+//            public void onClickEditItem(View v, int position) {
+//                Toast.makeText(getContext(), "Sửa todo", Toast.LENGTH_SHORT).show();
+//                ((MainActivity)requireActivity()).startInputFragment(mTodoList.get(position).getId(),1);
+//            }
+//        });
+//        recyclerViewTaskLis.setAdapter(taskListAdapter);
+//        taskListAdapter.notifyDataSetChanged();
 
     }
 }
