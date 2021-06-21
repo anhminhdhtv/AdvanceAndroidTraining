@@ -1,26 +1,20 @@
 package com.mrrobot.mvvm_todolist.ui.detail;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.fragment.app.Fragment;
 
 import com.mrrobot.mvvm_todolist.MainActivity;
 import com.mrrobot.mvvm_todolist.MyApplication;
 import com.mrrobot.mvvm_todolist.R;
 import com.mrrobot.mvvm_todolist.data.model.Todo;
 import com.mrrobot.mvvm_todolist.databinding.FragmentDetailBinding;
-import com.mrrobot.mvvm_todolist.ui.main.apdapter.MainViewModel;
-import com.mrrobot.mvvm_todolist.utils.AppContainer;
+
+import javax.inject.Inject;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -33,14 +27,9 @@ public class DetailFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private String mTaskID;
-    TextView txtTaskName, txtDate, txtDescription;
-    Button btnEdit,btnDelete;
+    @Inject
     TaskDetailViewModel taskDetailViewModel;
     Todo todoSelected;
-    ImageButton imgCancel;
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
 
     public DetailFragment() {
         // Required empty public constructor
@@ -67,16 +56,17 @@ public class DetailFragment extends Fragment {
         if (getArguments() != null) {
             mTaskID = getArguments().getString(ARG_PARAM1);
         }
+        ((MyApplication) requireActivity().getApplicationContext()).getComponent().inject(this);
 
-        AppContainer appContainer = ((MyApplication) requireActivity().getApplicationContext()).appContainer;
-        taskDetailViewModel = new TaskDetailViewModel(appContainer.repositoryData);
+//        AppContainer appContainer = ((MyApplication) requireActivity().getApplicationContext()).appContainer;
+//        taskDetailViewModel = new TaskDetailViewModel(appContainer.repositoryData);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        Toast.makeText(getContext(), "Hello "+ mTaskID, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Hello " + mTaskID, Toast.LENGTH_SHORT).show();
         View view = inflater.inflate(R.layout.fragment_detail, container, false);
         initDataBinding(view);
         return view;
@@ -86,12 +76,12 @@ public class DetailFragment extends Fragment {
         FragmentDetailBinding fragmentDetailBinding = FragmentDetailBinding.bind(view);
         fragmentDetailBinding.setLifecycleOwner(getViewLifecycleOwner());
         fragmentDetailBinding.setViewModel(taskDetailViewModel);
-        taskDetailViewModel.loadTodoById(mTaskID);
+        taskDetailViewModel.loadTodoTaskByID(mTaskID);
         fragmentDetailBinding.setListener(new TaskDetailListener() {
             @Override
             public void onEditClick(String todoTask) {
                 Toast.makeText(getContext(), "Hello onEditClick", Toast.LENGTH_SHORT).show();
-                ((MainActivity) requireActivity()).startInputFragment(todoTask,1);
+                ((MainActivity) requireActivity()).startInputFragment(todoTask, 1);
             }
 
             @Override

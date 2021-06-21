@@ -6,13 +6,9 @@ import com.mrrobot.mvvm_todolist.data.model.Todo;
 
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Headers;
-import retrofit2.http.POST;
-import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 public interface Service {
@@ -30,6 +26,6 @@ public interface Service {
 //    @PUT("todo_task/{id}")
 //    LiveData<ApiResponse<Void>> update(@Path("id") String id, @Body TodoTask todoTask);
 //
-//    @DELETE("todo_task/{id}")
-//    LiveData<ApiResponse<Void>> deleteTask(@Path("id") String id);
+    @DELETE("todo_task/{id}")
+    LiveData<ApiResponse<Todo>> deleteTask(@Path("id") String id);
 }

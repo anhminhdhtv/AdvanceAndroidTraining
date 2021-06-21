@@ -1,37 +1,29 @@
 package com.mrrobot.mvvm_todolist.ui.main;
 
 import android.os.Bundle;
-
-import androidx.activity.OnBackPressedDispatcher;
-import androidx.activity.OnBackPressedDispatcherOwner;
-import androidx.annotation.NonNull;
-import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.mrrobot.mvvm_todolist.MainActivity;
 import com.mrrobot.mvvm_todolist.MyApplication;
 import com.mrrobot.mvvm_todolist.R;
 import com.mrrobot.mvvm_todolist.data.model.Todo;
-import com.mrrobot.mvvm_todolist.data.repository.RepositoryData;
 import com.mrrobot.mvvm_todolist.databinding.FragmentMainBinding;
 import com.mrrobot.mvvm_todolist.ui.main.apdapter.MainViewModel;
 import com.mrrobot.mvvm_todolist.ui.main.apdapter.OnItemClickListener;
 import com.mrrobot.mvvm_todolist.ui.main.apdapter.TaskListAdapter;
-import com.mrrobot.mvvm_todolist.utils.AppContainer;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import javax.inject.Inject;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -48,8 +40,9 @@ public class MainFragment extends Fragment {
     List<Todo> mTodoList;
     TaskListAdapter taskListAdapter;
     RecyclerView recyclerViewTaskLis;
+    @Inject
     MainViewModel mainViewModel;
-    FloatingActionButton btnAdd;
+    FragmentMainBinding fragmentMainBinding;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -83,8 +76,9 @@ public class MainFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        AppContainer appContainer = ((MyApplication) requireActivity().getApplicationContext()).appContainer;
-        mainViewModel = new MainViewModel(appContainer.repositoryData);
+        ((MyApplication)requireActivity().getApplicationContext()).getComponent().inject(this);
+//        AppContainer appContainer = ((MyApplication) requireActivity().getApplicationContext()).appContainer;
+//        mainViewModel = new MainViewModel(appContainer.repositoryData);
 
     }
 
@@ -97,14 +91,15 @@ public class MainFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        subscribeToModel(mainViewModel.getAllTodoList());
+    }
+
     private void initLayout(View view) {
-        FragmentMainBinding fragmentMainBinding = DataBindingUtil.bind(view);
-        fragmentMainBinding.btnAdd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((MainActivity) requireActivity()).startAddFragment(0);
-            }
-        });
+        fragmentMainBinding = DataBindingUtil.bind(view);
+        fragmentMainBinding.btnAdd.setOnClickListener(v -> ((MainActivity) requireActivity()).startAddFragment(0));
         taskListAdapter = new TaskListAdapter(new OnItemClickListener() {
             @Override
             public void onItemClick(Todo todoTask) {
@@ -123,56 +118,16 @@ public class MainFragment extends Fragment {
         });
 
         fragmentMainBinding.recycleViewListTodo.setAdapter(taskListAdapter);
-        mainViewModel.getAllTodoList().observe(getViewLifecycleOwner(), new Observer<List<Todo>>() {
-            @Override
-            public void onChanged(List<Todo> todos) {
-                taskListAdapter.updateData(todos);
-            }
-        });
-
-//        //mainViewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
-//        mTodoList  = new ArrayList<>();
-//        recyclerViewTaskLis = view.findViewById(R.id.recycleViewListTodo);
-//        btnAdd = view.findViewById(R.id.btn_add);
-//        recyclerViewTaskLis.setHasFixedSize(true);
-//        recyclerViewTaskLis.setItemViewCacheSize(10);
-//        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(),LinearLayoutManager.VERTICAL,false);
-//        recyclerViewTaskLis.setLayoutManager(layoutManager);
-//
-//        btnAdd.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//            }
-//        });
-//        mainViewModel.getAllTodoList().observe(requireActivity(), new Observer<List<Todo>>() {
+//        mainViewModel.getAllTodoList().observe(getViewLifecycleOwner(), new Observer<List<Todo>>() {
 //            @Override
 //            public void onChanged(List<Todo> todos) {
 //                taskListAdapter.updateData(todos);
-//                mTodoList = mainViewModel.getAllTodoList().getValue();
 //            }
 //        });
-//        taskListAdapter = new TaskListAdapter(mTodoList, getContext(), new TaskListAdapter.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(View v, int position) {
-//                Toast.makeText(getContext(), "Xem chi tiết", Toast.LENGTH_SHORT).show();
-//                ((MainActivity) requireActivity()).startDetailFragment(mTodoList.get(position).getId());
-//            }
-//
-//            @Override
-//            public void onClickDeleteItem(View v, int position) {
-//                Toast.makeText(getContext(), "Xóa todo", Toast.LENGTH_SHORT).show();
-//                mainViewModel.deleteTodo(mTodoList.get(position));
-//            }
-//
-//            @Override
-//            public void onClickEditItem(View v, int position) {
-//                Toast.makeText(getContext(), "Sửa todo", Toast.LENGTH_SHORT).show();
-//                ((MainActivity)requireActivity()).startInputFragment(mTodoList.get(position).getId(),1);
-//            }
-//        });
-//        recyclerViewTaskLis.setAdapter(taskListAdapter);
-//        taskListAdapter.notifyDataSetChanged();
-
+    }
+    private void subscribeToModel(LiveData<List<Todo>> liveData) {
+        liveData.observe(getViewLifecycleOwner(), todoTasks -> {
+            taskListAdapter.updateData(todoTasks);
+        });
     }
 }

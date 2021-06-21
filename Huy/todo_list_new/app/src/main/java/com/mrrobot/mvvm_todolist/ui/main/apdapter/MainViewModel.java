@@ -1,26 +1,35 @@
 package com.mrrobot.mvvm_todolist.ui.main.apdapter;
 
-import android.app.Application;
-
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
-import com.mrrobot.mvvm_todolist.MyApplication;
 import com.mrrobot.mvvm_todolist.data.db.AppDatabase;
 import com.mrrobot.mvvm_todolist.data.model.Todo;
 import com.mrrobot.mvvm_todolist.data.repository.RepositoryData;
-import com.mrrobot.mvvm_todolist.utils.AppContainer;
+import com.mrrobot.mvvm_todolist.data.repository.Resource;
 
 import java.util.List;
+
+import javax.inject.Inject;
 
 public class MainViewModel extends ViewModel {
     LiveData<List<Todo>> listTodo;
     private RepositoryData repositoryData;
+
+    @Inject
     public MainViewModel(RepositoryData repositoryData) {
         this.repositoryData = repositoryData;
-        this.listTodo = repositoryData.getAllTodoList();
+        //this.listTodo = repositoryData.getAllTodoList();
+        LiveData<Resource<List<Todo>>> dataList = this.repositoryData.getAllTodoListFromServer();
+        listTodo = Transformations.switchMap(dataList, data -> {
+            if(data == null){
+                return new MutableLiveData<>(null);
+            } else {
+                return new MutableLiveData<>(data.data);
+            }
+        } );
     }
 
     public LiveData<List<Todo>> getAllTodoList(){
